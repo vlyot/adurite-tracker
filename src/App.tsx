@@ -1,49 +1,96 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useState } from "react";
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+interface AduriteItem {
+  limited_name: string;
+  rap: number;
+  price: number;
+}
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+function App() {
+  const [items, setItems] = useState<AduriteItem[]>([]);
+  const [rateThreshold, setRateThreshold] = useState(4.5);
+  const [minRAP, setMinRAP] = useState(0);
+  const [maxRAP, setMaxRAP] = useState(1_000_000);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await fetch("https://adurite.com/api/market/roblox");
+      const json = await res.json();
+
+      // Enforce typing so TypeScript knows it's AduriteItem[]
+      const itemArray: AduriteItem[] = Object.values(json.items.items).map((item: any) => ({
+  limited_name: item.limited_name,
+  rap: Number(item.rap),
+  price: Number(item.price),
+}));
+
+      setItems(itemArray);
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const filtered = items.filter((entry) => {
+    const { rap, price } = entry;
+    const rate = price / (rap / 1000);
+    return (
+      rap >= minRAP &&
+      rap <= maxRAP &&
+      rate <= rateThreshold &&
+      price > 0
+    );
+  });
 
   return (
     <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
+      <h1>Adurite Item Tracker</h1>
       <div className="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
+        <label>Rate ≤</label>
         <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
+          type="number"
+          value={rateThreshold}
+          onChange={(e) => setRateThreshold(parseFloat(e.target.value))}
+          step="0.1"
         />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+        <label>RAP Range:</label>
+        <input
+          type="number"
+          value={minRAP}
+          onChange={(e) => setMinRAP(parseInt(e.target.value))}
+        />
+        <span>to</span>
+        <input
+          type="number"
+          value={maxRAP}
+          onChange={(e) => setMaxRAP(parseInt(e.target.value))}
+        />
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>RAP</th>
+            <th>Price ($)</th>
+            <th>Rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.map((entry, i) => {
+            const rate = entry.price / (entry.rap / 1000);
+            return (
+              <tr key={i}>
+                <td>{entry.limited_name}</td>
+                <td>{entry.rap}</td>
+                <td>${entry.price.toFixed(2)}</td>
+                <td>{rate.toFixed(2)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </main>
   );
 }
