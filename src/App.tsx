@@ -19,13 +19,24 @@ function App() {
       const json = await res.json();
 
       // Enforce typing so TypeScript knows it's AduriteItem[]
-      const itemArray: AduriteItem[] = Object.values(json.items.items).map((item: any) => ({
+const rawItems: AduriteItem[] = Object.values(json.items.items).map((item: any) => ({
   limited_name: item.limited_name,
   rap: Number(item.rap),
   price: Number(item.price),
 }));
 
-      setItems(itemArray);
+// Remove duplicates by keeping only the lowest priced entry for each item
+const dedupedMap: Record<string, AduriteItem> = {};
+for (const item of rawItems) {
+  if (!dedupedMap[item.limited_name] || item.price < dedupedMap[item.limited_name].price) {
+    dedupedMap[item.limited_name] = item;
+  }
+}
+
+// ✅ Convert back to array and set state
+setItems(Object.values(dedupedMap));
+
+
     };
 
     fetchData();
@@ -33,7 +44,8 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const filtered = items.filter((entry) => {
+const filtered = items
+  .filter((entry) => {
     const { rap, price } = entry;
     const rate = price / (rap / 1000);
     return (
@@ -42,7 +54,9 @@ function App() {
       rate <= rateThreshold &&
       price > 0
     );
-  });
+  })
+  .sort((a, b) => (a.price / (a.rap / 1000)) - (b.price / (b.rap / 1000)));
+
 
   return (
     <main className="container">
