@@ -6,3 +6,7 @@ input.form-control:focus {
   background-color: #1e1e1e;
   color: #fff;
 }
+/* Light placeholder text for dark background */
+input::placeholder {
+  color: #ccc;
+}

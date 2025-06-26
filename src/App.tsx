@@ -167,7 +167,7 @@ function App() {
             </div>
           )}
 
-          <p className="mb-4 text-muted">
+          <p className={`mb-4 ${darkMode ? "text-light" : "text-muted"}`}>
             Showing items below <strong>{rateThreshold}</strong> within RAP range <strong>{formatValue(minRAP)}</strong> to <strong>{formatValue(maxRAP)}</strong>
             {sortBy ? <> filtered by <strong>{sortBy.toUpperCase()}</strong></> : null}.
           </p>
