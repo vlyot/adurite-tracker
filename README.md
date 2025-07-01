@@ -1,7 +1,14 @@
-# Tauri + React + Typescript
+# Adurite Tracker
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+Search up items with the lowest rates on adurite.com (with projected item flags) 
 
-## Recommended IDE Setup
+items displayed are already filtered to have the lowest rate so no need to worry about duplicates
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+future plans to updates (might already be implemented, but i didnt update this list)
+
+1. rap/value over time graph
+2. more item information
+3. Currency converter and tax calculator
+
+### stack
+Bulit with Tauri, Rust, and React.
